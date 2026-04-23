@@ -38,7 +38,7 @@ export default function EmotionDetector({
       </p>
 
       {/* Webcam Feed */}
-      <div className="relative rounded-2xl overflow-hidden bg-gray-900 aspect-video max-h-64 flex items-center justify-center webcam-ring border-2 border-accent/30">
+      <div className="webcam-container max-w-md mx-auto aspect-video group">
         <Webcam
           ref={webcamRef}
           audio={false}
@@ -51,22 +51,32 @@ export default function EmotionDetector({
           mirrored
         />
 
+        {/* Premium Overlays */}
+        <div className="webcam-overlay" />
+        {camReady && !loading && !result && <div className="webcam-scanner" />}
+
         {/* Loading overlay */}
         {loading && (
-          <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-3">
-            <div className="w-10 h-10 rounded-full border-4 border-accent/30 border-t-accent animate-spin" />
-            <p className="text-white text-sm font-medium">Analyzing face...</p>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4 z-30 transition-all duration-500">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-full border-4 border-accent/20 border-t-accent animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+              </div>
+            </div>
+            <p className="text-white text-xs font-black uppercase tracking-widest animate-pulse">Analyzing vibe...</p>
           </div>
         )}
 
         {/* Corner indicator */}
         {camReady && !loading && (
-          <div className="absolute top-3 left-3 flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-xs text-green-400 font-medium">Live</span>
+          <div className="absolute top-4 left-4 flex items-center gap-2 px-2 py-1 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 z-30">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-[10px] text-white font-black uppercase tracking-tighter">Live Feed</span>
           </div>
         )}
       </div>
+
 
       {/* Error */}
       {error && (
