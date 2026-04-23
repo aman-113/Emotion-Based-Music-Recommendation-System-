@@ -20,7 +20,6 @@ export default function Recommendations() {
   const [error,          setError]          = useState(null)
   const [nextPageToken,  setNextPageToken]  = useState(null)
   const [prevPageToken,  setPrevPageToken]  = useState(null)
-  const [searchQuery,    setSearchQuery]    = useState('')
 
   const emotionMeta = emotion ? getEmotionMeta(emotion) : null
 
@@ -44,7 +43,6 @@ export default function Recommendations() {
       setSongs(data.songs || [])
       setNextPageToken(data.next_page_token || null)
       setPrevPageToken(data.prev_page_token || null)
-      setSearchQuery(data.search_query || '')
 
       // Scroll to top on page change
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -84,7 +82,7 @@ export default function Recommendations() {
                 Your Playlist
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Curated for your current mood
+                Handpicked for how you feel right now
               </p>
             </div>
           </div>
@@ -113,7 +111,7 @@ export default function Recommendations() {
 
           <div className="ml-auto flex items-center gap-1.5 text-gray-400">
             <Music size={14} />
-            <span className="text-sm">{songs.length} songs</span>
+            <span className="text-sm">{songs.length} tracks</span>
           </div>
         </div>
 
@@ -136,7 +134,6 @@ export default function Recommendations() {
             prevPageToken={prevPageToken}
             onNextPage={() => fetchSongs(nextPageToken)}
             onPrevPage={() => fetchSongs(prevPageToken)}
-            searchQuery={searchQuery}
             emotion={emotion}
           />
         )}

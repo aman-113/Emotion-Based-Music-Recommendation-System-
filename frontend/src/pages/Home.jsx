@@ -89,17 +89,16 @@ export default function Home() {
       <div className="relative z-10 max-w-2xl mx-auto px-4 py-12 space-y-8">
         {/* Hero Header */}
         <div className="text-center space-y-3 animate-fade-in">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full 
-                          bg-accent/10 border border-accent/20 text-accent text-sm font-medium mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 text-accent text-xs font-semibold">
             <Sparkles size={14} />
-            AI-Powered Music Recommendations
+            Let your mood pick the music
           </div>
           <h1 className="text-5xl sm:text-6xl font-black tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>
             Mood
             <span className="text-accent">Tunes</span>
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-lg max-w-md mx-auto">
-            Music that understands exactly how you feel right now
+          <p className="text-gray-500 dark:text-gray-400 text-lg max-w-lg mx-auto leading-relaxed">
+            Tell us how you feel, and we will build a playlist that matches your moment.
           </p>
         </div>
 
@@ -166,9 +165,12 @@ export default function Home() {
             <div className={`flex items-center gap-3 p-4 mb-4 rounded-xl ${emotionMeta.bg} border-2 ${emotionMeta.border}`}>
               <span className="text-2xl">{emotionMeta.emoji}</span>
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Detected Mood</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Your current mood</p>
                 <p className={`font-bold text-lg capitalize ${emotionMeta.color}`}>{emotion}</p>
               </div>
+              <span className="ml-auto text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
+                Looks good - ready for recommendations
+              </span>
             </div>
           )}
 
@@ -178,15 +180,18 @@ export default function Home() {
             className="btn-primary w-full flex items-center justify-center gap-3 text-lg py-4"
           >
             <Music size={20} />
-            Get My Music Recommendations
+            Create My Playlist
             <ArrowRight size={20} />
           </button>
+          {!emotion && (
+            <p className="text-center mt-3 text-xs text-gray-400">
+              Pick or detect a mood to continue.
+            </p>
+          )}
         </div>
 
         {/* Footer hint */}
-        <p className="text-center text-xs text-gray-400 animate-fade-in">
-          Powered by DeepFace · HuggingFace · YouTube
-        </p>
+       
       </div>
     </div>
   )

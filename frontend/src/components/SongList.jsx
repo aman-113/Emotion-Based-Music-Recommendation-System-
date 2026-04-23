@@ -44,11 +44,7 @@ export default function SongList({
         <span className="px-3 py-1 bg-accent/10 text-accent rounded-full font-medium capitalize">
           {emotion}
         </span>
-        {searchQuery && (
-          <span className="text-xs text-gray-400 font-mono ml-2 hidden sm:inline">
-            "{searchQuery}"
-          </span>
-        )}
+        
       </div>
 
       {/* Song Grid */}

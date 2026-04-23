@@ -42,7 +42,7 @@ export default function TextEmotionInput({ onDetected }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-gray-500 dark:text-gray-400">
-        Write freely about how you feel — our AI will detect your emotion:
+        Write a line or two about your day, and we will read the vibe:
       </p>
 
       {/* Textarea */}
@@ -60,6 +60,24 @@ export default function TextEmotionInput({ onDetected }) {
           ${text.length > MAX_CHARS * 0.8 ? 'text-orange-500' : 'text-gray-400'}`}>
           {text.length}/{MAX_CHARS}
         </span>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {[
+          'I feel light and positive today',
+          'I am mentally tired and need calm music',
+          'I feel a bit low and emotional',
+        ].map((sample) => (
+          <button
+            key={sample}
+            type="button"
+            onClick={() => setText(sample)}
+            className="text-xs px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700
+                       text-gray-500 dark:text-gray-400 hover:border-accent/50 hover:text-accent transition-colors"
+          >
+            {sample}
+          </button>
+        ))}
       </div>
 
       {/* Error */}
@@ -83,7 +101,7 @@ export default function TextEmotionInput({ onDetected }) {
         ) : (
           <>
             <Sparkles size={16} />
-            Analyze My Mood
+            Understand My Mood
           </>
         )}
       </button>

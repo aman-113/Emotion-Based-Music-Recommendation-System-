@@ -76,6 +76,12 @@ export default function SongCard({ song, index }) {
           )}
         </div>
 
+        {song.description && (
+          <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
+            {song.description}
+          </p>
+        )}
+
         {/* Watch Button */}
         <button
           onClick={handleWatch}
@@ -84,7 +90,7 @@ export default function SongCard({ song, index }) {
                      transition-all duration-200 active:scale-95 group/btn"
         >
           <Youtube size={15} />
-          Watch on YouTube
+          Play on YouTube
           <ExternalLink size={12} className="opacity-60 group-hover/btn:opacity-100 transition-opacity" />
         </button>
       </div>

@@ -8,6 +8,7 @@ EMOTION_QUERY_MAP: dict[str, str] = {
     "sad":      "sad emotional songs playlist",
     "angry":    "calm instrumental music",
     "neutral":  "lofi chill music playlist",
+    "calm":     "calm relaxing instrumental music",
     "surprise": "fun energetic songs",
     "fear":     "soothing calming music",
     "disgust":  "uplifting positive songs",
