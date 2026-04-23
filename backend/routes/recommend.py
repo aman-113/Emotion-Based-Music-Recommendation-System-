@@ -1,7 +1,7 @@
 """
 routes/recommend.py
 POST /api/recommend-songs
-Combines emotion + weather → generates search query → fetches YouTube videos.
+Uses emotion to generate search query and fetches YouTube videos.
 """
 
 import os
@@ -10,7 +10,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 
-from utils.emotion_weather_map import get_search_query, normalize_weather_condition
+from utils.emotion_query_map import get_search_query
 
 router = APIRouter()
 
@@ -23,8 +23,6 @@ MAX_RESULTS = 9
 class RecommendPayload(BaseModel):
     """Request body for song recommendations."""
     emotion:             str              # e.g. "happy"
-    weather_condition:   str              # e.g. "Rain" or "Clear"
-    is_night:            Optional[bool]   = False
     page_token:          Optional[str]    = None  # YouTube pagination token
     custom_query:        Optional[str]    = None  # Override auto-generated query
 
@@ -32,9 +30,9 @@ class RecommendPayload(BaseModel):
 @router.post("/recommend-songs")
 async def recommend_songs(payload: RecommendPayload):
     """
-    Returns YouTube song recommendations based on emotion + weather.
+    Returns YouTube song recommendations based on emotion.
 
-    - Builds a context-aware search query from emotion + weather
+    - Builds a context-aware search query from emotion
     - Fetches videos from YouTube Data API v3
     - Returns video metadata + pagination tokens
     """
@@ -43,12 +41,10 @@ async def recommend_songs(payload: RecommendPayload):
         raise HTTPException(status_code=500, detail="YOUTUBE_API_KEY not configured.")
 
     # ── Build Search Query ────────────────────────────────────────────────────
-    weather_key = normalize_weather_condition(payload.weather_condition, payload.is_night)
-
     if payload.custom_query:
         search_query = payload.custom_query
     else:
-        search_query = get_search_query(payload.emotion, weather_key)
+        search_query = get_search_query(payload.emotion)
 
     # ── YouTube API Request ───────────────────────────────────────────────────
     params = {
@@ -114,7 +110,6 @@ async def recommend_songs(payload: RecommendPayload):
         return {
             "success":          True,
             "emotion":          payload.emotion,
-            "weather":          payload.weather_condition,
             "search_query":     search_query,
             "songs":            songs,
             "next_page_token":  data.get("nextPageToken"),

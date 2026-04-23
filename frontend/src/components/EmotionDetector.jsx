@@ -3,50 +3,30 @@
  * Webcam-based emotion detection using DeepFace (via backend).
  */
 
-import { useRef, useState, useCallback } from 'react'
+import { useState } from 'react'
 import Webcam from 'react-webcam'
-import { Camera, RefreshCw, AlertCircle } from 'lucide-react'
-import { detectFaceEmotion } from '../utils/api'
-import { SpinnerIcon } from './Loader'
+import { AlertCircle } from 'lucide-react'
 import { getEmotionMeta } from '../utils/emotions'
 
 const WEBCAM_CONSTRAINTS = {
-  width:       640,
-  height:      480,
+  width:       960,
+  height:      720,
   facingMode:  'user',
 }
 
-export default function EmotionDetector({ onDetected }) {
-  const webcamRef             = useRef(null)
-  const [loading,  setLoading]  = useState(false)
-  const [error,    setError]    = useState(null)
-  const [result,   setResult]   = useState(null)
+export default function EmotionDetector({
+  result,
+  loading,
+  error,
+  webcamRef,
+  onCameraReady,
+  setError,
+}) {
   const [camReady, setCamReady] = useState(false)
 
-  const capture = useCallback(async () => {
-    if (!webcamRef.current) return
-    setError(null)
-    setLoading(true)
-    setResult(null)
-
-    try {
-      // Capture screenshot as base64 JPEG
-      const imageSrc = webcamRef.current.getScreenshot({ width: 640, height: 480 })
-      if (!imageSrc) throw new Error('Could not capture image from webcam.')
-
-      const data = await detectFaceEmotion(imageSrc)
-      setResult(data)
-      onDetected(data.emotion) // Bubble up
-    } catch (err) {
-      setError(err.message || 'Face detection failed. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }, [onDetected])
-
-  const reset = () => {
-    setResult(null)
-    setError(null)
+  const handleUserMedia = () => {
+    setCamReady(true)
+    onCameraReady?.()
   }
 
   const meta = result ? getEmotionMeta(result.emotion) : null
@@ -54,7 +34,7 @@ export default function EmotionDetector({ onDetected }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-gray-500 dark:text-gray-400">
-        Position your face in the camera and click Detect to analyze your expression:
+        Position your face in the camera. Emotion will be detected automatically:
       </p>
 
       {/* Webcam Feed */}
@@ -63,8 +43,9 @@ export default function EmotionDetector({ onDetected }) {
           ref={webcamRef}
           audio={false}
           screenshotFormat="image/jpeg"
+          screenshotQuality={0.95}
           videoConstraints={WEBCAM_CONSTRAINTS}
-          onUserMedia={() => setCamReady(true)}
+          onUserMedia={handleUserMedia}
           onUserMediaError={() => setError('Camera access denied. Please allow camera permissions.')}
           className="w-full h-full object-cover"
           mirrored
@@ -94,28 +75,6 @@ export default function EmotionDetector({ onDetected }) {
           {error}
         </div>
       )}
-
-      {/* Action Buttons */}
-      <div className="flex gap-3">
-        <button
-          onClick={capture}
-          disabled={loading || !camReady}
-          className="btn-primary flex-1 flex items-center justify-center gap-2"
-        >
-          {loading ? (
-            <><SpinnerIcon size={16} /> Detecting...</>
-          ) : (
-            <><Camera size={16} /> Detect Emotion</>
-          )}
-        </button>
-
-        {result && (
-          <button onClick={reset} className="btn-ghost flex items-center gap-2">
-            <RefreshCw size={16} />
-            Retry
-          </button>
-        )}
-      </div>
 
       {/* Result */}
       {result && meta && (

@@ -47,7 +47,8 @@ async def detect_face_emotion(payload: ImagePayload):
         result = DeepFace.analyze(
             img_path=img_array,
             actions=["emotion"],
-            enforce_detection=False,  # Don't throw error if no face found
+            enforce_detection=True,
+            detector_backend="opencv",
             silent=True,
         )
 
@@ -63,6 +64,11 @@ async def detect_face_emotion(payload: ImagePayload):
             "source": "webcam",
         }
 
+    except ValueError:
+        raise HTTPException(
+            status_code=422,
+            detail="No clear face detected. Center your face, improve lighting, and try again."
+        )
     except Exception as e:
         raise HTTPException(
             status_code=500,

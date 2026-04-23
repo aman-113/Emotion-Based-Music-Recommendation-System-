@@ -1,11 +1,11 @@
 /**
  * pages/Recommendations.jsx
- * Fetches and displays song recommendations based on emotion + weather.
+ * Fetches and displays song recommendations based on emotion.
  */
 
 import { useState, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, RefreshCw, Cloud, Music } from 'lucide-react'
+import { ArrowLeft, RefreshCw, Music } from 'lucide-react'
 import { recommendSongs } from '../utils/api'
 import SongList from '../components/SongList'
 import { getEmotionMeta } from '../utils/emotions'
@@ -13,7 +13,7 @@ import { getEmotionMeta } from '../utils/emotions'
 export default function Recommendations() {
   const location = useLocation()
   const navigate  = useNavigate()
-  const { emotion, weather } = location.state || {}
+  const { emotion } = location.state || {}
 
   const [songs,          setSongs]          = useState([])
   const [loading,        setLoading]        = useState(false)
@@ -38,8 +38,6 @@ export default function Recommendations() {
     try {
       const data = await recommendSongs({
         emotion,
-        weather_condition: weather?.condition || 'Clear',
-        is_night:          weather?.is_night || false,
         page_token:        pageToken,
       })
 
@@ -55,7 +53,7 @@ export default function Recommendations() {
     } finally {
       setLoading(false)
     }
-  }, [emotion, weather])
+  }, [emotion])
 
   useEffect(() => {
     fetchSongs()
@@ -101,7 +99,7 @@ export default function Recommendations() {
           </button>
         </div>
 
-        {/* Mood + Weather Summary Bar */}
+        {/* Mood Summary Bar */}
         <div className="flex flex-wrap items-center gap-3 animate-slide-up">
           {emotionMeta && (
             <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl ${emotionMeta.bg} border-2 ${emotionMeta.border}`}>
@@ -110,23 +108,6 @@ export default function Recommendations() {
                 <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Mood</p>
                 <p className={`font-bold text-sm capitalize ${emotionMeta.color}`}>{emotion}</p>
               </div>
-            </div>
-          )}
-
-          {weather ? (
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass-card">
-              <img src={weather.icon_url} alt={weather.condition} className="w-8 h-8" />
-              <div>
-                <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Weather</p>
-                <p className="font-bold text-sm text-blue-600 dark:text-blue-400">
-                  {weather.city} · {weather.condition} · {weather.temperature_c}°C
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl glass-card text-gray-400">
-              <Cloud size={18} />
-              <span className="text-sm">No weather data</span>
             </div>
           )}
 
@@ -157,7 +138,6 @@ export default function Recommendations() {
             onPrevPage={() => fetchSongs(prevPageToken)}
             searchQuery={searchQuery}
             emotion={emotion}
-            weather={weather?.condition}
           />
         )}
 

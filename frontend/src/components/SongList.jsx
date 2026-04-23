@@ -17,7 +17,6 @@ export default function SongList({
   onPrevPage,
   searchQuery,
   emotion,
-  weather,
 }) {
   if (loading) {
     return <Loader message="Finding the perfect songs for your mood..." size="lg" />
@@ -31,7 +30,7 @@ export default function SongList({
         </div>
         <div>
           <p className="font-semibold text-gray-700 dark:text-gray-300">No songs found</p>
-          <p className="text-sm text-gray-400 mt-1">Try a different emotion or city</p>
+          <p className="text-sm text-gray-400 mt-1">Try a different emotion</p>
         </div>
       </div>
     )
@@ -45,14 +44,6 @@ export default function SongList({
         <span className="px-3 py-1 bg-accent/10 text-accent rounded-full font-medium capitalize">
           {emotion}
         </span>
-        {weather && (
-          <>
-            <span className="text-gray-400">+</span>
-            <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full font-medium capitalize">
-              {weather}
-            </span>
-          </>
-        )}
         {searchQuery && (
           <span className="text-xs text-gray-400 font-mono ml-2 hidden sm:inline">
             "{searchQuery}"

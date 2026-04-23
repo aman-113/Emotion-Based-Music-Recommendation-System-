@@ -1,18 +1,16 @@
 /**
  * pages/Home.jsx
- * Main page: user selects detection method, emotion detected, weather fetched,
- * then navigates to Recommendations page.
+ * Main page: user selects detection method and gets recommendations.
  */
 
-import { useState } from 'react'
+import { useCallback, useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Camera, Type, Hand, Music, ArrowRight, Sparkles } from 'lucide-react'
 import EmotionDetector from '../components/EmotionDetector'
 import ManualEmotionInput from '../components/ManualEmotionInput'
 import TextEmotionInput from '../components/TextEmotionInput'
-import WeatherBadge from '../components/WeatherBadge'
 import { getEmotionMeta } from '../utils/emotions'
-import { SpinnerIcon } from '../components/Loader'
+import { detectFaceEmotion } from '../utils/api'
 
 // Input method tabs
 const METHODS = [
@@ -26,7 +24,12 @@ export default function Home() {
 
   const [method,   setMethod]   = useState('manual')
   const [emotion,  setEmotion]  = useState(null)
-  const [weather,  setWeather]  = useState(null)
+  const [result,   setResult]   = useState(null)
+  const [loading,  setLoading]  = useState(false)
+  const [error,    setError]    = useState(null)
+  const [webcamReady, setWebcamReady] = useState(false)
+  const webcamRef = useRef(null)
+  const autoCaptureDoneRef = useRef(false)
 
   const emotionMeta = emotion ? getEmotionMeta(emotion) : null
 
@@ -36,10 +39,46 @@ export default function Home() {
     navigate('/recommendations', {
       state: {
         emotion,
-        weather: weather || null,
       },
     })
   }
+
+  const capture = useCallback(async () => {
+    if (!webcamRef.current) return
+    setError(null)
+    setLoading(true)
+    setResult(null)
+
+    try {
+      // Some browsers fire "camera ready" before first frame is drawable.
+      // Retry for a short window until screenshot is available.
+      let imageSrc = null
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        imageSrc = webcamRef.current?.getScreenshot({ width: 960, height: 720 })
+        if (imageSrc) break
+        await new Promise((resolve) => setTimeout(resolve, 250))
+      }
+      if (!imageSrc) throw new Error('Could not capture image from webcam.')
+
+      const data = await detectFaceEmotion(imageSrc)
+      setResult(data)
+      setEmotion(data.emotion) // Bubble up
+    } catch (err) {
+      setError(err.message || 'Face detection failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (method === 'webcam' && webcamReady && !autoCaptureDoneRef.current) {
+      autoCaptureDoneRef.current = true
+      const timer = setTimeout(() => {
+        capture()
+      }, 900)
+      return () => clearTimeout(timer)
+    }
+  }, [method, webcamReady, capture])
 
   return (
     <div className="min-h-screen relative">
@@ -76,7 +115,14 @@ export default function Home() {
             {METHODS.map(({ id, label, icon: Icon, desc }) => (
               <button
                 key={id}
-                onClick={() => { setMethod(id); setEmotion(null) }}
+                onClick={() => {
+                  setMethod(id)
+                  setEmotion(null)
+                  setError(null)
+                  setResult(null)
+                  autoCaptureDoneRef.current = false
+                  if (id !== 'webcam') setWebcamReady(false)
+                }}
                 className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200
                   ${method === id
                     ? 'border-accent bg-accent/10 text-accent'
@@ -93,7 +139,14 @@ export default function Home() {
           {/* Method Content */}
           <div className="pt-2">
             {method === 'webcam' && (
-              <EmotionDetector onDetected={setEmotion} />
+              <EmotionDetector
+                result={result}
+                loading={loading}
+                error={error}
+                webcamRef={webcamRef}
+                onCameraReady={() => setWebcamReady(true)}
+                setError={setError}
+              />
             )}
             {method === 'manual' && (
               <ManualEmotionInput selected={emotion} onSelect={setEmotion} />
@@ -104,26 +157,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Step 2 — Weather (optional) */}
-        <div className={`glass-card p-6 space-y-4 transition-all duration-300 animate-slide-up
-          ${emotion ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}
-          style={{ animationDelay: '100ms' }}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-accent text-white text-xs font-bold flex items-center justify-center">2</span>
-              <h2 className="font-bold text-lg">Add weather context</h2>
-            </div>
-            <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-              Optional
-            </span>
-          </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Let us tailor your playlist to match the weather outside.
-          </p>
-          <WeatherBadge weather={weather} onWeatherFetched={setWeather} />
-        </div>
-
-        {/* Step 3 — Get Recommendations CTA */}
+        {/* Step 2 — Get Recommendations CTA */}
         <div className={`animate-slide-up transition-all duration-300 ${emotion ? 'opacity-100' : 'opacity-30'}`}
           style={{ animationDelay: '200ms' }}>
 
@@ -135,12 +169,6 @@ export default function Home() {
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Detected Mood</p>
                 <p className={`font-bold text-lg capitalize ${emotionMeta.color}`}>{emotion}</p>
               </div>
-              {weather && (
-                <div className="ml-auto flex items-center gap-2">
-                  <img src={weather.icon_url} alt="" className="w-8 h-8" />
-                  <span className="text-sm text-gray-500">{weather.condition}</span>
-                </div>
-              )}
             </div>
           )}
 
@@ -157,7 +185,7 @@ export default function Home() {
 
         {/* Footer hint */}
         <p className="text-center text-xs text-gray-400 animate-fade-in">
-          Powered by DeepFace · HuggingFace · YouTube · OpenWeather
+          Powered by DeepFace · HuggingFace · YouTube
         </p>
       </div>
     </div>

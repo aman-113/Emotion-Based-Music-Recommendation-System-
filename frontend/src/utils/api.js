@@ -43,12 +43,8 @@ export const detectFaceEmotion = (base64Image) =>
 export const detectTextEmotion = (text) =>
   api.post('/api/detect-text-emotion', { text })
 
-/** Fetch live weather for a city */
-export const getWeather = (city) =>
-  api.get('/api/get-weather', { params: { city } })
-
 /** Fetch song recommendations */
-export const recommendSongs = ({ emotion, weather_condition, is_night, page_token, custom_query }) =>
-  api.post('/api/recommend-songs', { emotion, weather_condition, is_night, page_token, custom_query })
+export const recommendSongs = ({ emotion, page_token, custom_query }) =>
+  api.post('/api/recommend-songs', { emotion, page_token, custom_query })
 
 export default api

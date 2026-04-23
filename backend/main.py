@@ -14,7 +14,6 @@ load_dotenv()
 # Import route modules
 from routes.emotion_face import router as face_router
 from routes.emotion_text import router as text_router
-from routes.weather import router as weather_router
 from routes.recommend import router as recommend_router
 
 # ── App Initialization ────────────────────────────────────────────────────────
@@ -37,7 +36,6 @@ app.add_middleware(
 # ── Register Routers ──────────────────────────────────────────────────────────
 app.include_router(face_router,     prefix="/api", tags=["Face Emotion"])
 app.include_router(text_router,     prefix="/api", tags=["Text Emotion"])
-app.include_router(weather_router,  prefix="/api", tags=["Weather"])
 app.include_router(recommend_router,prefix="/api", tags=["Recommendations"])
 
 
